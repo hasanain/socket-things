@@ -15,5 +15,11 @@
   "bugs": {
     "url": "https://github.com/hjamal/socket-things/issues"
   },
-  "homepage": "https://github.com/hjamal/socket-things"
+  "homepage": "https://github.com/hjamal/socket-things",
+  "dependencies": {
+    "body-parser": "^1.13.2",
+    "express": "^4.13.1",
+    "morgan": "^1.6.1",
+    "path": "^0.11.14"
+  }
 }
