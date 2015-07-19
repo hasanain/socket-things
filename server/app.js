@@ -22,7 +22,7 @@ app.use(function (req, res, next) {
 // routes for the api
 apiRouter.get('/', function (req, res) {
   res.json({
-    message: 'I am the API'
+    message: 'I am the API!'
   });
 });
 app.get('/', function (req, res) {
