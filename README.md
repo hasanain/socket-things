@@ -1,5 +1,12 @@
-# Project to learn about web sockets
-I have a few things in mind that I want to build 
- 1. chat client
- 2. colaborative drawing
- 3. ...
+# Web
+This repository will contain demos to socket.io web socket implementation. It will use an express server.
+To Run clone the repository on your local machine and cd into it then run:
+    npm install
+    node server/app.js
+Demos:
+ 1. Shared list (done)
+ 3. chat client
+ 3. colaborative drawing
+ 4. ...
+TODO:
+ 1. gulp file
