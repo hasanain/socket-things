@@ -1,10 +1,71 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<meta charset="utf-8">
-	<title>Hello</title>
+    <meta charset="utf-8">
+    <title>Test Sockets</title>
+    <style type="text/css">
+    	.connected {
+    		color: greenyellow;
+    	}
+    	.disconnected {
+    		color: indianred;
+    	}
+    </style>
 </head>
 <body>
-	<h1>Hello World!</h1>
+	
+	<h2>Shared List</h2>
+	<p id="connection-status"></p>
+	<ol id="todo-list"></ol>
+	<input type="text" name="newItem" onkeypress="triggerTyping()" id="item-to-add">
+	<button onclick="submit()" id="add-item">Add Item</button>
+    <script src="/socket.io/socket.io.js"></script>
+
+    <script>
+	    var connectionStatusElement = document.getElementById('connection-status');
+	    var todoListElement = document.getElementById('todo-list');
+	    var submitButton = document.getElementById('add-item');
+	    var newItem = document.getElementById('item-to-add');
+
+	    var socket = io.connect('http://localhost:8080');
+	    socket.on('user-connected', function(data) {
+	    	connectionStatusElement.innerHTML = 'connected';
+	    	connectionStatusElement.setAttribute('class', 'connected');
+
+	    	while (todoListElement.hasChildNodes()) {
+	    		todoListElement.removeChild(todoListElement.firstChild);
+	    	}
+
+	        data.forEach(function (item) {
+	        	var entry = document.createElement('li');
+	        	entry.appendChild(document.createTextNode(item));
+	        	todoListElement.appendChild(entry);
+	        });
+	        
+	    });
+
+	    socket.on('disconnect', function (data) {
+	    	connectionStatusElement.innerHTML = "disconnected";
+	    	connectionStatusElement.setAttribute('class', 'disconnected');
+	  	});
+	   	function submit (){
+	   		socket.emit('new-item-added', {
+	   			newItem: newItem.value
+	   		});
+	   		newItem.value = "";
+	   	}
+
+	   	socket.on('new-item-added-client', function (data) {
+	   		var entry = document.createElement('li');
+	      	entry.appendChild(document.createTextNode(data.newItem));
+	       	todoListElement.appendChild(entry);
+	   	});
+	   	function triggerTyping () {
+	   		socket.emit('typing-client');
+	   	}
+	   	socket.on('typing-client', function (data) {
+	   		console.log('someone is typing');
+	   	});
+    </script>
 </body>
 </html>
