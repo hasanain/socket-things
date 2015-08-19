@@ -27,7 +27,7 @@
 	    var submitButton = document.getElementById('add-item');
 	    var newItem = document.getElementById('item-to-add');
 
-	    var socket = io.connect('http://localhost:8080');
+	    var socket = io.connect('https://hasanain.herokuapp.com');
 	    socket.on('user-connected', function(data) {
 	    	connectionStatusElement.innerHTML = 'connected';
 	    	connectionStatusElement.setAttribute('class', 'connected');
