@@ -36,6 +36,9 @@ apiRouter.get('/', function (req, res) {
 app.get('/', function (req, res) {
   res.sendFile(path.join(__dirname + '/../client/index.html'));
 });
+app.get('/test', function(req, res){
+  res.sendFile(path.join(__dirname + '/../client/test.html'));
+});
 app.get('/files/listSocketClient.js', function (req, res) {
   res.sendFile(path.join(__dirname + '/../client/listSocketClient.js'));
 });
