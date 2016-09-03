@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>chat client</title>
+	<style type="text/css">
+		.error{
+			font-size: 10pt;
+			color: red;
+		}
+		.name {
+			color: green;
+			font-family: "Courier New", monospace;
+		}
+		.message {
+			font-family: "Courier New", monospace;
+		}
+		.hidden{
+			visibility: hidden;
+		}
+		.user-left{
+			font-size: 90%;
+			color: orange;
+			font-family: "Courier New", monospace;
+		}
+		.user-joined{
+			font-size: 90%;
+			color: lime;
+			font-family: "Courier New", monospace;
+		}
+	</style>
+</head>
+<body>
+	<div class="input-name">
+		<form>
+			<p class="error"></p>
+			<input type="text" name="name" placeholder="please enter your name" />
+			<input type="submit" name="enterName" />
+		</form>
+	</div>
+
+	<script src="/socket.io/socket.io.js"></script>
+	<script type="text/javascript">
+		function insertNewMessage(name, message){
+			document.querySelector(".chat-box").innerHTML += `<div><span class="name">${name}: </span><span class="message">${message}</span></div>`;
+		}
+		function insertuserLeftMessage(name){
+			document.querySelector(".chat-box").innerHTML += `<div class="user-left">${name} has left the chat...</div>`;
+		}
+		function insertuserJoinedMessage(name){
+			document.querySelector(".chat-box").innerHTML += `<div class="user-joined">${name} has joined the chat...</div>`;
+		}
+		var name;
+		var nameForm = document.querySelector(".input-name > form");
+		nameForm.addEventListener('submit',function(e){
+			e.preventDefault();
+			name = this.elements[0].value;
+			if(name === ""){
+				var errorP = document.querySelector(".error");
+				errorP.innerHTML = "Please insert a name";
+				this.appendChild(errorP);
+			} else {
+				document.body.innerHTML = `<div class="chat-client">
+					<div class="chat-box"></div>
+					<div class="message-box">
+					<form>
+					<input type="text" name="message" placeholder="Plese enter a message to send" />
+					<input type="submit" name="send" value="Send" />
+					</form>
+					</div>
+					</div>`;
+				var socket = io.connect('/chat', {query: `name=${name}`})
+
+				var messageField = document.querySelector("input[name='message']");
+				document.querySelector(".message-box > form")
+				.addEventListener('submit', function(e){
+					e.preventDefault();
+					socket.emit('new-message', {
+						name: name,
+						message: messageField.value
+					});
+					insertNewMessage(name, messageField.value);
+					messageField.value = "";
+
+				});
+				socket.on('user-connected', function(data){
+					data.messages.forEach(function(message){
+						insertNewMessage(message.name, message.message);
+					});
+				});
+				socket.on('new-user-joined', function(data){
+					insertuserJoinedMessage(data.user);
+				});
+				socket.on('new-message', function(data){
+					insertNewMessage(data.name, data.message);
+				})
+				socket.on('user-left',function(name){
+					insertuserLeftMessage(name);
+				})
+			}
+		});
+	</script>
+</body>
+</html>
