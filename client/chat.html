@@ -1,103 +1,153 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>chat client</title>
-	<style type="text/css">
-		.error{
-			font-size: 10pt;
-			color: red;
-		}
-		.name {
-			color: green;
-			font-family: "Courier New", monospace;
-		}
-		.message {
-			font-family: "Courier New", monospace;
-		}
-		.hidden{
-			visibility: hidden;
-		}
-		.user-left{
-			font-size: 90%;
-			color: orange;
-			font-family: "Courier New", monospace;
-		}
-		.user-joined{
-			font-size: 90%;
-			color: lime;
-			font-family: "Courier New", monospace;
-		}
-	</style>
+  <title>chat client</title>
+  <link href="http://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+      <!--Import materialize.css-->
+  <link rel="stylesheet" type="text/css" href="css/materialize.min.css">
+  <style type="text/css">
+    .error{
+      font-size: 10pt;
+      color: red;
+    }
+    .name {
+      color: green;
+      font-family: "Courier New", monospace;
+    }
+    .message {
+      font-family: "Courier New", monospace;
+    }
+    .hidden{
+      visibility: hidden;
+    }
+    .user-left{
+      font-size: 90%;
+      color: orange;
+      font-family: "Courier New", monospace;
+    }
+    .user-joined{
+      font-size: 90%;
+      color: lime;
+      font-family: "Courier New", monospace;
+    }
+    .message-box{
+      position: fixed;
+      bottom: 20px;
+    }
+    #input-name{
+      padding-top: 25%;
+      padding-bottom: 25%;
+    }
+    #main{
+      height: 100%;
+    }
+  </style>
 </head>
 <body>
-	<div class="input-name">
-		<form>
-			<p class="error"></p>
-			<input type="text" name="name" placeholder="please enter your name" />
-			<input type="submit" name="enterName" />
-		</form>
-	</div>
+  <div class="container" id="main">
+    <div class="valign-wrapper" id="input-name">
+    <div class="valign center center-block">
+      <h4>Welcome to the chat app. Enter your name to continue:</h4>
+      <form>
+        <p class="error"></p>
+        <input type="text" name="name" placeholder="please enter your name" />
+        <button class="btn waves-effect waves-light col s9" type="submit" name="action">
+          Sumbit<i class="material-icons right">send</i>
+       </button>   
+      </form>
+    </div>
+    </div>
+  </div>
+  <script src="/socket.io/socket.io.js"></script>
+  <script type="text/javascript">
+    function insertNewMessage(name, message){
+      document.querySelector("#chat-box").innerHTML += `<div><span class="name">${name}: </span><span class="message">${message}</span></div>`;
+    }
+    function insertuserLeftMessage(name){
+      document.querySelector("#chat-box").innerHTML += `<div class="user-left">${name} has left the chat...</div>`;
+    }
+    function insertuserJoinedMessage(name){
+      document.querySelector("#chat-box").innerHTML += `<div class="user-joined">${name} has joined the chat...</div>`;
+    }
+    var name;
+    var nameForm = document.querySelector("#input-name form");
+    nameForm.addEventListener('submit',function(e){
+      e.preventDefault();
+      name = this.elements[0].value;
+      if(name === ""){
+        var errorP = document.querySelector(".error");
+        errorP.innerHTML = "Please insert a name";
+        this.appendChild(errorP);
+      } else {
+        document.querySelector('#main').innerHTML = 
+`<div class="chat-client">
+  <div class="row">
+    <div id="chat-box" class="col s9">
+    </div>
+    <div id="online-users" class="col s3">
+      <p id="number-of-users"><strong>online users</strong></p>
+      <div></div>
+    </div>
+  </div>
+  <div class="message-box row">
+    <form class="col s12">
+      <div class="row">
+        <div class="input-field col s9">
+          <input type="text" name="message" placeholder="Enter your message" />
+        </div>
+        <div class="input-field col s3">
+          <button class="btn waves-effect waves-light" type="submit" name="action">
+            Send<i class="material-icons right">send</i>
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>`;
+      var socket = io.connect('/chat', {query: `name=${name}`})
 
-	<script src="/socket.io/socket.io.js"></script>
-	<script type="text/javascript">
-		function insertNewMessage(name, message){
-			document.querySelector(".chat-box").innerHTML += `<div><span class="name">${name}: </span><span class="message">${message}</span></div>`;
-		}
-		function insertuserLeftMessage(name){
-			document.querySelector(".chat-box").innerHTML += `<div class="user-left">${name} has left the chat...</div>`;
-		}
-		function insertuserJoinedMessage(name){
-			document.querySelector(".chat-box").innerHTML += `<div class="user-joined">${name} has joined the chat...</div>`;
-		}
-		var name;
-		var nameForm = document.querySelector(".input-name > form");
-		nameForm.addEventListener('submit',function(e){
-			e.preventDefault();
-			name = this.elements[0].value;
-			if(name === ""){
-				var errorP = document.querySelector(".error");
-				errorP.innerHTML = "Please insert a name";
-				this.appendChild(errorP);
-			} else {
-				document.body.innerHTML = `<div class="chat-client">
-					<div class="chat-box"></div>
-					<div class="message-box">
-					<form>
-					<input type="text" name="message" placeholder="Plese enter a message to send" />
-					<input type="submit" name="send" value="Send" />
-					</form>
-					</div>
-					</div>`;
-				var socket = io.connect('/chat', {query: `name=${name}`})
-
-				var messageField = document.querySelector("input[name='message']");
-				document.querySelector(".message-box > form")
-				.addEventListener('submit', function(e){
-					e.preventDefault();
-					socket.emit('new-message', {
-						name: name,
-						message: messageField.value
-					});
-					insertNewMessage(name, messageField.value);
-					messageField.value = "";
-
-				});
-				socket.on('user-connected', function(data){
-					data.messages.forEach(function(message){
-						insertNewMessage(message.name, message.message);
-					});
-				});
-				socket.on('new-user-joined', function(data){
-					insertuserJoinedMessage(data.user);
-				});
-				socket.on('new-message', function(data){
-					insertNewMessage(data.name, data.message);
-				})
-				socket.on('user-left',function(name){
-					insertuserLeftMessage(name);
-				})
-			}
-		});
-	</script>
+      var messageField = document.querySelector("input[name='message']");
+      document.querySelector(".message-box > form")
+      .addEventListener('submit', function(e){
+        e.preventDefault();
+        socket.emit('new-message', {
+          name: name,
+          message: messageField.value
+        });
+        insertNewMessage(name, messageField.value);
+        messageField.value = "";
+      });
+      socket.on('user-connected', function(data){
+        document.querySelector("#number-of-users").innerHTML=`<strong>Online Users (${data.connected.length})</strong>`;
+        document.querySelector("#online-users > div").innerHTML = "";
+        data.connected.forEach(function(userName){
+          document.querySelector("#online-users").innerHTML += `<div class="name truncate">${userName}</div>`
+        });
+        data.messages.forEach(function(message){
+          insertNewMessage(message.name, message.message);
+        });
+      });
+      socket.on('new-user-joined', function(data){
+        document.querySelector("#number-of-users").innerHTML=`<strong>Online Users (${data.connected.length})</strong>`;
+        document.querySelector("#online-users > div").innerHTML = "";
+        data.connected.forEach(function(userName){
+          document.querySelector("#online-users > div").innerHTML += `<div class="name truncate">${userName}</div>`
+        });
+        insertuserJoinedMessage(data.user);
+      });
+      socket.on('new-message', function(data){
+        insertNewMessage(data.name, data.message);
+      });
+      socket.on('user-left',function(data){
+        document.querySelector("#number-of-users").innerHTML=`<strong>Online Users (${data.connected.length})</strong>`;
+        document.querySelector("#online-users > div").innerHTML = "";
+        data.connected.forEach(function(userName){
+          document.querySelector("#online-users > div").innerHTML += `<div class="name truncate">${userName}</div>`
+        });
+        insertuserLeftMessage(data.name);
+      });
+    }
+  });
+</script>
 </body>
 </html>

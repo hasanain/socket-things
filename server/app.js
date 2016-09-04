@@ -31,13 +31,10 @@ app.get('/todo', function (req, res) {
 app.get('/chat', function(req, res){
   res.sendFile(path.join(__dirname + '/../client/chat.html'));
 });
-app.get('/files/listSocketClient.js', function (req, res) {
-  res.sendFile(path.join(__dirname + '/../client/listSocketClient.js'));
-});
 
 
 // set up routers with server
-app.use(express.static(__dirname + '../client'));
+app.use(express.static(path.join(__dirname + '/../client/resources/')));
 
 server.listen(port);
 
@@ -63,13 +60,13 @@ io.of('/chat')
   var name = socket.request._query['name'];
   if(name !== "") connected.push(name);
   socket.emit('user-connected', {messages: messages, connected: connected, user: name});
-  socket.broadcast.emit('new-user-joined', {user:name});
+  socket.broadcast.emit('new-user-joined', {user:name, connected:connected});
   socket.on('new-message',function(data){
     messages.push(data);
     socket.broadcast.emit('new-message', data);    
   });
   socket.on('disconnect', function(){
     connected.splice(connected.indexOf(name), 1);
-    socket.broadcast.emit('user-left', name);
+    socket.broadcast.emit('user-left', {name: name, connected: connected});
   });
 });
