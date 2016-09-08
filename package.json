@@ -1,6 +1,6 @@
 {
   "name": "socket-things",
-  "version": "0.0.0",
+  "version": "0.0.01",
   "description": "Project to work with socket.io",
   "main": "server/app.js",
   "scripts": {
